@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AR Photo Album</title>
+    <!-- Import dependencies via CDN for portability -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image.prod.js"></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+    
+    <style>
+      body { margin: 0; padding: 0; overflow: hidden; font-family: sans-serif; }
+      
+      /* Scanning UI Overlay */
+      #scanning-overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        background: rgba(0, 0, 0, 0.5); z-index: 2; pointer-events: auto; /* Allow clicking to unlock video */
+      }
+      .scan-frame {
+        width: 80vw; height: 50vw; max-width: 400px; max-height: 250px;
+        border: 4px solid white; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        position: relative;
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .instructions {
+        margin-top: 20px; color: white; font-size: 1.2rem; font-weight: bold;
+        text-shadow: 1px 1px 4px black; text-align: center;
+      }
+      .start-btn {
+        margin-top: 15px; padding: 10px 20px; font-size: 1rem;
+        background: white; color: black; border: none; border-radius: 5px; cursor: pointer;
+      }
+      
+      /* Hide overlay when target is found */
+      body.target-found #scanning-overlay { display: none; }
+    </style>
+  </head>
+  <body>
+    <!-- User-Friendly Scanning Overlay -->
+    <div id="scanning-overlay">
+      <div class="scan-frame"></div>
+      <div class="instructions">Point your camera at the photo</div>
+      <button class="start-btn" id="start-btn">Tap to Start (Unlocks Auto-play)</button>
+    </div>
+
+    <!-- AR Scene Setup -->
+    <!-- We use the default MindAR card target for demonstration -->
+    <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/examples/image-tracking/assets/card-example/card.mind; filterMinCF:0.0001; filterBeta: 0.001" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <!-- The video to play. iOS requires playsinline and webkit-playsinline -->
+        <video id="ar-video" src="https://cdn.aframe.io/videos/bunny.mp4" preload="auto" loop="true" crossOrigin="anonymous" playsinline webkit-playsinline></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity id="target" mindar-image-target="targetIndex: 0">
+        <!-- Video overlay that plays over the image target.
+             Width/Height should match the aspect ratio of the image and video. -->
+        <a-video src="#ar-video" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+      </a-entity>
+      
+    </a-scene>
+
+    <script>
+      const target = document.querySelector('#target');
+      const video = document.querySelector('#ar-video');
+      const startBtn = document.querySelector('#start-btn');
+      let videoUnlocked = false;
+
+      // Mobile browsers prevent video playback without user interaction.
+      // We force the user to tap "Start" to unlock the video context.
+      startBtn.addEventListener('click', () => {
+        video.play().then(() => {
+          video.pause(); // Immediately pause after unlocking so it only plays when target is found
+          videoUnlocked = true;
+          startBtn.style.display = 'none'; // Hide the button after unlocking
+          document.querySelector('.instructions').innerText = "Now point at the photo!";
+        }).catch(err => console.error("Video play failed:", err));
+      }, { once: true });
+
+      // Play video when the image target is detected
+      target.addEventListener("targetFound", event => {
+        console.log("Target found!");
+        document.body.classList.add("target-found");
+        if (videoUnlocked) {
+          video.play();
+        }
+      });
+
+      // Pause video when the image target is lost
+      target.addEventListener("targetLost", event => {
+        console.log("Target lost!");
+        document.body.classList.remove("target-found");
+        video.pause();
+      });
+    </script>
+  </body>
+</html>

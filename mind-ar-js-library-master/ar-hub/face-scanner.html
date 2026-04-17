@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Face Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-face.prod.js"></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-face-aframe.prod.js"></script>
+    <style>
+      body, html { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; font-family: sans-serif; }
+      .example-container {
+        overflow: hidden;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
+      .back-button {
+        position: absolute; top: 20px; left: 20px; z-index: 1000;
+        background: rgba(0, 0, 0, 0.6); color: white; border: 1px solid white;
+        padding: 10px 15px; border-radius: 8px; font-weight: bold; text-decoration: none;
+        backdrop-filter: blur(5px);
+      }
+      .loading-text {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: -1;
+        color: white; font-size: 1.2rem; font-weight: bold; text-shadow: 1px 1px 4px black;
+      }
+      .options-panel {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        display: flex;
+        gap: 10px;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        border-radius: 12px;
+        backdrop-filter: blur(5px);
+        pointer-events: auto;
+      }
+      .options-panel img {
+        border: solid 2px transparent;
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        cursor: pointer;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.8);
+      }
+      .options-panel img.selected {
+        border-color: #4facfe;
+        box-shadow: 0 0 10px #4facfe;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="index.html" class="back-button">← Back to Hub</a>
+    <div class="loading-text">Loading Camera...</div>
+
+    <div class="options-panel">
+      <img id="hat1" src="../examples/face-tracking/assets/hat/thumbnail.png"/>
+      <img id="hat2" src="../examples/face-tracking/assets/hat2/thumbnail.png"/>
+      <img id="glasses1" src="../examples/face-tracking/assets/glasses/thumbnail.png"/>
+      <img id="glasses2" src="../examples/face-tracking/assets/glasses2/thumbnail.png"/>
+      <img id="earring" src="../examples/face-tracking/assets/earring/thumbnail.png"/>
+    </div>
+
+    <!-- Face Tracking Scene -->
+    <div class="example-container">
+      <a-scene mindar-face embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      <a-assets>
+        <a-asset-item id="headModel" src="../examples/face-tracking/assets/sparkar/headOccluder.glb"></a-asset-item>
+        <a-asset-item id="glassesModel" src="../examples/face-tracking/assets/glasses/scene.gltf"></a-asset-item>
+        <a-asset-item id="glassesModel2" src="../examples/face-tracking/assets/glasses2/scene.gltf"></a-asset-item>
+        <a-asset-item id="hatModel" src="../examples/face-tracking/assets/hat/scene.gltf"></a-asset-item>
+        <a-asset-item id="hatModel2" src="../examples/face-tracking/assets/hat2/scene.gltf"></a-asset-item>
+        <a-asset-item id="earringModel" src="../examples/face-tracking/assets/earring/scene.gltf"></a-asset-item>
+      </a-assets>
+
+      <a-camera active="false" position="0 0 0"></a-camera>
+
+      <a-entity mindar-face-target="anchorIndex: 168">
+	<a-gltf-model mindar-face-occluder position="0 -0.3 0.15" rotation="0 0 0" scale="0.065 0.065 0.065" src="#headModel"></a-gltf-model>
+      </a-entity>
+
+      <a-entity mindar-face-target="anchorIndex: 10">
+	<a-gltf-model rotation="0 -0 0" position="0 1.0 -0.5" scale="0.35 0.35 0.35" src="#hatModel" class="hat1-entity"></a-gltf-model>
+      </a-entity>
+      <a-entity mindar-face-target="anchorIndex: 10">
+	<a-gltf-model rotation="0 -0 0" position="0 -0.2 -0.5" scale="0.008 0.008 0.008" src="#hatModel2" class="hat2-entity"></a-gltf-model>
+      </a-entity>
+
+      <a-entity mindar-face-target="anchorIndex: 168">
+	<a-gltf-model rotation="0 -0 0" position="0 0 -0.1" scale="0.009 0.009 0.009" src="#glassesModel" class="glasses1-entity"></a-gltf-model>
+      </a-entity>
+
+      <a-entity mindar-face-target="anchorIndex: 168">
+	<a-gltf-model rotation="0 -90 0" position="0 -0.4 -0.25" scale="0.7 0.7 0.7" src="#glassesModel2" class="glasses2-entity"></a-gltf-model>
+      </a-entity>
+	
+      <a-entity mindar-face-target="anchorIndex: 127">
+	<a-gltf-model rotation="-0.1 -0 0" position="0 -0.3 -0.3" scale="0.05 0.05 0.05" src="#earringModel" class="earring-entity"></a-gltf-model>
+      </a-entity>
+
+      <a-entity mindar-face-target="anchorIndex: 356">
+	<a-gltf-model rotation="0.1 -0 0" position="0 -0.3 -0.3" scale="0.05 0.05 0.05" src="#earringModel" class="earring-entity"></a-gltf-model>
+      </a-entity>
+    </a-scene>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        const list = ["glasses1", "glasses2", "hat1", "hat2", "earring"];
+        const visibles = [true, false, false, false, false];
+
+        const setVisible = (button, entities, visible) => {
+          if (visible) {
+            button.classList.add("selected");
+          } else {
+            button.classList.remove("selected");
+          }
+          entities.forEach((entity) => {
+            entity.setAttribute("visible", visible ? "true" : "false");
+            if (entity.object3D) {
+              entity.object3D.visible = visible;
+            }
+          });
+        }
+
+        const sceneEl = document.querySelector('a-scene');
+        sceneEl.addEventListener("arReady", (event) => {
+          document.querySelector('.loading-text').style.display = 'none';
+          
+          list.forEach((item, index) => {
+            const button = document.querySelector("#" + item);
+            const entities = document.querySelectorAll("." + item + "-entity");
+            setVisible(button, entities, visibles[index]);
+          });
+        });
+
+        list.forEach((item, index) => {
+          const button = document.querySelector("#" + item);
+          const entities = document.querySelectorAll("." + item + "-entity");
+          
+          button.addEventListener('click', () => {
+            const wasActive = visibles[index];
+            
+            list.forEach((_item, _i) => {
+              if (visibles[_i]) {
+                visibles[_i] = false;
+                const _btn = document.querySelector("#" + _item);
+                const _ents = document.querySelectorAll("." + _item + "-entity");
+                setVisible(_btn, _ents, false);
+              }
+            });
+
+            if (!wasActive) {
+              visibles[index] = true;
+              setVisible(button, entities, true);
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
